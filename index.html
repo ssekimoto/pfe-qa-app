@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ブログ</title>
+</head>
+<body>
+    <h1>ブログ記事一覧</h1>
+    <ul id="post-list"></ul>
+
+    <hr>
+
+    <h2>新しい記事を投稿</h2>
+    <form id="post-form">
+        <div>
+            <label for="title">タイトル:</label>
+            <input type="text" id="title" required>
+        </div>
+        <div>
+            <label for="content">本文:</label>
+            <textarea id="content" required></textarea>
+        </div>
+        <button type="submit">投稿する</button>
+    </form>
+
+    <script>
+        const postList = document.getElementById('post-list');
+        const postForm = document.getElementById('post-form');
+
+        // 記事一覧を取得して表示する関数
+        async function fetchPosts() {
+            const response = await fetch('/api/posts');
+            const posts = await response.json();
+            
+            postList.innerHTML = ''; // 一旦クリア
+            posts.forEach(post => {
+                const li = document.createElement('li');
+                li.textContent = `[ID: ${post.id}] ${post.title}`;
+                postList.appendChild(li);
+            });
+        }
+
+        // フォーム送信時の処理
+        postForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+
+            await fetch('/api/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, content }),
+            });
+
+            // フォームをクリアして記事一覧を再読み込み
+            postForm.reset();
+            await fetchPosts();
+        });
+
+        // ページ読み込み時に記事一覧を初回読み込み
+        fetchPosts();
+    </script>
+</body>
+</html>
